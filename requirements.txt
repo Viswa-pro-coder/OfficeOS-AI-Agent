@@ -1,0 +1,6 @@
+
+streamlit
+langchain-groq
+requests
+pandas
+streamlit-option-menu
