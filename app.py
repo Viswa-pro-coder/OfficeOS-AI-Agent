@@ -62,14 +62,16 @@ def clean_text(text):
     text = re.sub(r'(?<!\n)###', '\n\n###', text) 
     return text
 
-# --- REAL AI LOGIC 1: MARKET RESEARCHER ---
+# --- REAL AI LOGIC 1: MARKET RESEARCHER (ROBUST FIX) ---
 def run_direct_research(topic):
     results_container = st.empty()
     with st.status("🕵️ Agent is working...", expanded=True) as status:
         st.write("🌐 Connecting to World Wide Web...")
         time.sleep(1) 
         
-        url = "[https://google.serper.dev/search](https://google.serper.dev/search)"
+        # Manually typed URL to ensure no hidden characters
+        url = "https://google.serper.dev/search"
+        
         payload = json.dumps({"q": topic})
         headers = {
             'X-API-KEY': st.secrets["SERPER_API_KEY"],
@@ -78,14 +80,24 @@ def run_direct_research(topic):
         
         st.write(f"🔍 Searching Google for: '{topic}'...")
         try:
-            response = requests.request("POST", url, headers=headers, data=payload)
-            search_data = response.json()
+            # Use a session to ensure stable connection
+            with requests.Session() as session:
+                session.trust_env = False # Ignores local proxies/VPNs that might block the request
+                response = session.post(url, headers=headers, data=payload)
+                response.raise_for_status() # Raise error if API fails
+                search_data = response.json()
+            
             organic_results = search_data.get("organic", [])[:4] 
             context_text = ""
             for res in organic_results:
                 context_text += f"- {res.get('title')}: {res.get('snippet')}\n"
+            
+            if not context_text:
+                context_text = "No direct search results found, but I will provide general knowledge."
+                
             st.write("✅ Found relevant data sources.")
             time.sleep(1)
+            
         except Exception as e:
             status.update(label="Error in Search", state="error")
             return f"Search Error: {e}"
