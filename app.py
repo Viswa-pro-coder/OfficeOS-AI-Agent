@@ -295,7 +295,7 @@ def run_data_cleaner(messy_data):
         return csv_string
 
 # --- HEADER ---
-st.title("🏢 OfficeOS: 8-Agent Project Day Demo")
+st.title("🏢 OfficeOS: 8-Agent Efficency System")
 st.markdown("---")
 
 # --- SIDEBAR ---
